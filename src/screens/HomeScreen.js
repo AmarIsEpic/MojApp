@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Animated, Easing } from 'react-native';
 import { getForecast, getWeather, groupDaily } from '../api/weatherApi';
 import CozyBackground from '../components/CozyBackground';
 import CurrentWeatherCard from '../components/CurrentWeatherCard';
@@ -21,6 +21,8 @@ export default function HomeScreen({ navigation }) {
   const [error, setError] = useState('');
   const [forecast, setForecast] = useState(null);
   const [lastCity, setLastCity] = useState('');
+  const fadeIn = useState(new Animated.Value(0))[0];
+  const bgPulse = useState(new Animated.Value(0))[0];
 
   const fetchWeather = async (targetCity = city) => {
     if (!targetCity) return;
@@ -35,6 +37,16 @@ export default function HomeScreen({ navigation }) {
     }
     setWeather(data);
     setLastCity(targetCity);
+    try {
+      fadeIn.stopAnimation();
+      bgPulse.stopAnimation();
+      fadeIn.setValue(0);
+      bgPulse.setValue(0);
+      Animated.parallel([
+        Animated.timing(fadeIn, { toValue: 1, duration: 450, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(bgPulse, { toValue: 1, duration: 700, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+      ]).start();
+    } catch {}
     setLoading(false);
     try {
       const condition = data?.weather?.[0]?.main || data?.weather?.[0]?.description;
@@ -51,6 +63,11 @@ export default function HomeScreen({ navigation }) {
       fetchWeather(lastCity);
     }
   }, [units]);
+
+  const softBgColor = bgPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isDark ? 'rgba(94,225,255,0.00)' : 'rgba(94,225,255,0.00)', isDark ? 'rgba(94,225,255,0.10)' : 'rgba(138,180,248,0.10)']
+  });
 
   return (
     <View style={[styles.container, isDark ? styles.containerDark : styles.containerLight]}>
@@ -81,7 +98,7 @@ export default function HomeScreen({ navigation }) {
         )}
 
         {weather && weather.main && (
-          <View>
+          <Animated.View style={{ opacity: fadeIn, width: '100%' }}>
             <View style={styles.favoriteContainer}>
               <Text style={[styles.cityName, isDark ? styles.textDark : styles.textLight]}>
                 {weather.name}
@@ -103,9 +120,12 @@ export default function HomeScreen({ navigation }) {
                 />
               </Pressable>
             </View>
-            <CurrentWeatherCard isDark={isDark} temp={weather.main.temp} condition={weather.weather[0].description} units={units} />
+            <View style={{ position: 'relative' }}>
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: softBgColor, borderRadius: 16 }]} />
+              <CurrentWeatherCard isDark={isDark} temp={weather.main.temp} condition={weather.weather[0].description} units={units} />
+            </View>
             <WeatherDetails isDark={isDark} feelsLike={weather.main.feels_like} humidity={weather.main.humidity} wind={weather.wind.speed} units={units} />
-          </View>
+          </Animated.View>
         )}
 
         {forecast?.list && (

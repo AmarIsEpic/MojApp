@@ -1,17 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View, Animated, Easing } from 'react-native';
 import { getWeather } from '../api/weatherApi';
 import { FavoritesContext } from '../context/FavoritesContext';
 import { ThemeContext } from '../theme/ThemeContext';
 
-const FavoriteCard = ({ item, onPress, onRemove, isDark, units, styles }) => (
-    <Pressable
-        style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
-        onPress={onPress}
-    >
+const FavoriteCard = ({ item, onPress, onRemove, isDark, units, styles }) => {
+    const fade = useRef(new Animated.Value(0)).current;
+    const lift = useRef(new Animated.Value(6)).current;
+    useEffect(() => {
+        fade.setValue(0);
+        lift.setValue(6);
+        Animated.parallel([
+            Animated.timing(fade, { toValue: 1, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+            Animated.timing(lift, { toValue: 0, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        ]).start();
+    }, [item?.city, item?.weather?.dt]);
+    return (
+    <Animated.View style={{ opacity: fade, transform: [{ translateY: lift }] }}>
+      <Pressable
+          style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
+          onPress={onPress}
+      >
         <View style={styles.cardContent}>
-            <View style={styles.leftSection}>
+          <View style={styles.leftSection}>
                 <View style={styles.headerRow}>
                     <Text style={[styles.cityName, isDark ? styles.textDark : styles.textLight]}>
                         {item.city}
@@ -64,10 +76,12 @@ const FavoriteCard = ({ item, onPress, onRemove, isDark, units, styles }) => (
                         </View>
                     </View>
                 )}
-            </View>
+          </View>
         </View>
-    </Pressable>
-);
+      </Pressable>
+    </Animated.View>
+    );
+};
 
 export default function FavoritesScreen({ navigation }) {
     const { favorites, removeFavorite, addFavorite, isFavorite } = useContext(FavoritesContext);
@@ -182,6 +196,7 @@ const styles = StyleSheet.create({
     },
     list: {
         padding: 20,
+        gap: 12,
     },
     header: {
         marginBottom: 20,
@@ -209,10 +224,12 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     card: {
-        borderRadius: 20,
-        padding: 18,
-        marginBottom: 16,
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
         borderWidth: 1,
+        transitionProperty: 'transform, box-shadow',
+        transitionDuration: '160ms',
     },
     cardDark: {
         backgroundColor: 'rgba(255,255,255,0.04)',
@@ -220,12 +237,12 @@ const styles = StyleSheet.create({
     },
     cardLight: {
         backgroundColor: '#FFFFFF',
-        borderColor: 'rgba(94,225,255,0.4)',
+        borderColor: 'rgba(0,0,0,0.08)',
         shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 3,
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
     },
     cardContent: {
         width: '100%',
@@ -255,7 +272,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     temp: {
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: 'bold',
         fontFamily: 'Quicksand_600SemiBold',
     },
