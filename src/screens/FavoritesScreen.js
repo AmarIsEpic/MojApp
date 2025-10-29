@@ -66,7 +66,7 @@ const FavoriteCityCard = ({ cityName, weather, onPress, onRemove, isDark, units 
             <MaterialCommunityIcons 
               name={iconForCondition(weather.weather?.[0]?.description || '')} 
               size={48} 
-              color={isDark ? '#FFB070' : '#FFB4A2'} 
+              color={isDark ? '#FFB070' : '#374151'} 
             />
             <View style={styles.tempWrap}>
               <Text style={[styles.temp, isDark ? styles.tempDark : styles.tempLight]}>
@@ -106,7 +106,7 @@ export default function FavoritesScreen({ navigation }) {
         favorites.map(async (city) => {
           try {
             const weather = await getWeather(city, units);
-            if (weather && !weather.cod) {
+            if (weather && Number(weather.cod) === 200) {
               return { city, weather };
             }
           } catch {}

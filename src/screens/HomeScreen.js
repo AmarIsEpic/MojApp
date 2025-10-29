@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }) {
 
   const bgOpacity = bgFade.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, isDark ? 0.12 : 0.08]
+    outputRange: [0, isDark ? 0.08 : 0.06]
   });
 
   return (
@@ -147,7 +147,7 @@ export default function HomeScreen({ navigation }) {
                 style={[
                   StyleSheet.absoluteFill, 
                   { 
-                    backgroundColor: isDark ? 'rgba(94,225,255,1)' : 'rgba(255,212,105,1)', 
+                    backgroundColor: isDark ? 'rgba(94,225,255,1)' : 'rgba(255,248,230,1)', 
                     borderRadius: 16,
                     opacity: bgOpacity
                   }
