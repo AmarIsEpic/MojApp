@@ -30,25 +30,42 @@ const FavoriteCityCard = ({ cityName, weather, onPress, onRemove, isDark, units 
     ]).start();
   }, [weather?.dt]);
 
-  if (!weather || !weather.main) return null;
+  if (!weather || !weather.main) {
+    return (
+      <View style={[styles.card, isDark ? styles.cardDark : styles.cardLight, styles.errorCard]}>
+        <Text style={[styles.errorText, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+          Nema podataka za {cityName}
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], marginBottom: 12 }}>
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], marginBottom: 16 }}>
       <Pressable
         style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
         onPress={onPress}
       >
         <View style={styles.cardHeader}>
-          <Text style={[styles.cityName, isDark ? styles.textDark : styles.textLight]}>{cityName}</Text>
-          <Pressable onPress={(e) => { e.stopPropagation(); onRemove(cityName); }} style={styles.heartBtn}>
-            <Ionicons name="heart" size={20} color="#FF7D7D" />
+          <Text style={[styles.cityName, isDark ? styles.textDark : styles.textLight]} numberOfLines={1}>
+            {cityName}
+          </Text>
+          <Pressable 
+            onPress={(e) => { 
+              e.stopPropagation(); 
+              onRemove(cityName); 
+            }} 
+            style={styles.heartBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="heart" size={22} color="#FF7D7D" />
           </Pressable>
         </View>
         <View style={styles.weatherContent}>
-          <View style={styles.tempSection}>
+          <View style={styles.iconTempRow}>
             <MaterialCommunityIcons 
               name={iconForCondition(weather.weather?.[0]?.description || '')} 
-              size={40} 
+              size={48} 
               color={isDark ? '#FFB070' : '#FFB4A2'} 
             />
             <View style={styles.tempWrap}>
@@ -60,7 +77,10 @@ const FavoriteCityCard = ({ cityName, weather, onPress, onRemove, isDark, units 
               </Text>
             </View>
           </View>
-          <Text style={[styles.description, isDark ? styles.descDark : styles.descLight]}>
+          <Text 
+            style={[styles.description, isDark ? styles.descDark : styles.descLight]} 
+            numberOfLines={1}
+          >
             {weather.weather?.[0]?.description || 'N/A'}
           </Text>
         </View>
@@ -204,10 +224,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
     width: '100%',
+    minHeight: 140,
   },
   cardDark: {
     backgroundColor: 'rgba(255,255,255,0.04)',
@@ -217,44 +238,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderColor: 'rgba(0,0,0,0.08)',
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  errorCard: {
+    minHeight: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_400Regular',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   cityName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     fontFamily: 'Nunito_700Bold',
     flex: 1,
+    marginRight: 8,
   },
   heartBtn: {
-    padding: 4,
+    padding: 6,
+    borderRadius: 20,
   },
   weatherContent: {
     alignItems: 'center',
   },
-  tempSection: {
+  iconTempRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   tempWrap: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginLeft: 12,
+    marginLeft: 16,
   },
   temp: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: 'bold',
     fontFamily: 'Quicksand_600SemiBold',
+    lineHeight: 48,
   },
   tempDark: {
     color: '#5EE1FF',
@@ -263,9 +296,9 @@ const styles = StyleSheet.create({
     color: '#0B0F14',
   },
   unit: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: 6,
     fontFamily: 'Quicksand_600SemiBold',
   },
   unitDark: {
@@ -275,9 +308,10 @@ const styles = StyleSheet.create({
     color: '#0B0F14',
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     textTransform: 'capitalize',
     fontFamily: 'Nunito_400Regular',
+    textAlign: 'center',
   },
   descDark: {
     color: '#B8C4CF',

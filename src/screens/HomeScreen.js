@@ -22,7 +22,7 @@ export default function HomeScreen({ navigation }) {
   const [forecast, setForecast] = useState(null);
   const [lastCity, setLastCity] = useState('');
   const fadeIn = useState(new Animated.Value(0))[0];
-  const bgPulse = useState(new Animated.Value(0))[0];
+  const bgFade = useState(new Animated.Value(0))[0];
 
   const fetchWeather = async (targetCity = city, skipAnimation = false) => {
     if (!targetCity) return;
@@ -37,20 +37,35 @@ export default function HomeScreen({ navigation }) {
     }
     const isNewCity = targetCity !== lastCity;
     setWeather(data);
+    
     if (!skipAnimation && isNewCity) {
       try {
         fadeIn.stopAnimation();
-        bgPulse.stopAnimation();
+        bgFade.stopAnimation();
         fadeIn.setValue(0);
-        bgPulse.setValue(0);
+        bgFade.setValue(0);
         Animated.parallel([
-          Animated.timing(fadeIn, { toValue: 1, duration: 450, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-          Animated.timing(bgPulse, { toValue: 1, duration: 700, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+          Animated.timing(fadeIn, { 
+            toValue: 1, 
+            duration: 600, 
+            easing: Easing.out(Easing.quad), 
+            useNativeDriver: true 
+          }),
+          Animated.timing(bgFade, { 
+            toValue: 1, 
+            duration: 800, 
+            easing: Easing.out(Easing.quad), 
+            useNativeDriver: true 
+          }),
         ]).start();
       } catch {}
     } else {
       fadeIn.setValue(1);
-      bgPulse.setValue(0);
+      if (!isNewCity) {
+        bgFade.setValue(1);
+      } else {
+        bgFade.setValue(0);
+      }
     }
     setLastCity(targetCity);
     setLoading(false);
@@ -70,9 +85,9 @@ export default function HomeScreen({ navigation }) {
     }
   }, [units]);
 
-  const softBgColor = bgPulse.interpolate({
+  const bgOpacity = bgFade.interpolate({
     inputRange: [0, 1],
-    outputRange: [isDark ? 'rgba(94,225,255,0.00)' : 'rgba(94,225,255,0.00)', isDark ? 'rgba(94,225,255,0.10)' : 'rgba(138,180,248,0.10)']
+    outputRange: [0, isDark ? 0.12 : 0.08]
   });
 
   return (
@@ -127,7 +142,17 @@ export default function HomeScreen({ navigation }) {
               </Pressable>
             </View>
             <View style={{ position: 'relative' }}>
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: softBgColor, borderRadius: 16 }]} />
+              <Animated.View 
+                pointerEvents="none" 
+                style={[
+                  StyleSheet.absoluteFill, 
+                  { 
+                    backgroundColor: isDark ? 'rgba(94,225,255,1)' : 'rgba(255,212,105,1)', 
+                    borderRadius: 16,
+                    opacity: bgOpacity
+                  }
+                ]} 
+              />
               <CurrentWeatherCard isDark={isDark} temp={weather.main.temp} condition={weather.weather[0].description} units={units} />
             </View>
             <WeatherDetails isDark={isDark} feelsLike={weather.main.feels_like} humidity={weather.main.humidity} wind={weather.wind.speed} units={units} />
