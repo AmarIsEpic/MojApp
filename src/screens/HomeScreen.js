@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation }) {
   const fadeIn = useState(new Animated.Value(0))[0];
   const bgPulse = useState(new Animated.Value(0))[0];
 
-  const fetchWeather = async (targetCity = city) => {
+  const fetchWeather = async (targetCity = city, skipAnimation = false) => {
     if (!targetCity) return;
     setLoading(true);
     setError('');
@@ -35,18 +35,24 @@ export default function HomeScreen({ navigation }) {
       setLoading(false);
       return;
     }
+    const isNewCity = targetCity !== lastCity;
     setWeather(data);
-    setLastCity(targetCity);
-    try {
-      fadeIn.stopAnimation();
-      bgPulse.stopAnimation();
-      fadeIn.setValue(0);
+    if (!skipAnimation && isNewCity) {
+      try {
+        fadeIn.stopAnimation();
+        bgPulse.stopAnimation();
+        fadeIn.setValue(0);
+        bgPulse.setValue(0);
+        Animated.parallel([
+          Animated.timing(fadeIn, { toValue: 1, duration: 450, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(bgPulse, { toValue: 1, duration: 700, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+        ]).start();
+      } catch {}
+    } else {
+      fadeIn.setValue(1);
       bgPulse.setValue(0);
-      Animated.parallel([
-        Animated.timing(fadeIn, { toValue: 1, duration: 450, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.timing(bgPulse, { toValue: 1, duration: 700, easing: Easing.out(Easing.quad), useNativeDriver: false }),
-      ]).start();
-    } catch {}
+    }
+    setLastCity(targetCity);
     setLoading(false);
     try {
       const condition = data?.weather?.[0]?.main || data?.weather?.[0]?.description;
@@ -60,7 +66,7 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     if (lastCity) {
-      fetchWeather(lastCity);
+      fetchWeather(lastCity, true);
     }
   }, [units]);
 
