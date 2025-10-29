@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }) {
 
   const bgOpacity = bgFade.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, isDark ? 0.11 : 0.09]
+    outputRange: [0, isDark ? 0.14 : 0.12]
   });
 
   return (
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: '#78350F',
     fontWeight: '700',
     letterSpacing: 0.5,
   },

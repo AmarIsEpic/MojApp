@@ -56,10 +56,10 @@ export default function AnimatedBackground({ accent = '#5EE1FF' }) {
   }
 
   const { isDark } = useContext(ThemeContext);
-  const lightTone1 = 'rgba(255, 247, 214, 0.55)';
-  const lightTone2 = 'rgba(255, 236, 179, 0.45)';
-  const darkTone1 = accent + '33';
-  const darkTone2 = accent + '22';
+  const lightTone1 = 'rgba(255, 237, 179, 0.75)';
+  const lightTone2 = 'rgba(255, 220, 150, 0.65)';
+  const darkTone1 = accent + '44';
+  const darkTone2 = accent + '33';
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
