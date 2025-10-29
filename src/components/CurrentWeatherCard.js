@@ -11,7 +11,7 @@ export default function CurrentWeatherCard({ temp, condition, isDark, units = 'm
 
   return (
     <Animated.View style={[styles.card, { transform: [{ scale }] }, isDark && styles.cardDark]}>
-      <MaterialCommunityIcons name={iconForCondition(condition)} size={56} color={isDark ? '#FFB070' : '#374151'} />
+      <MaterialCommunityIcons name={iconForCondition(condition)} size={56} color={isDark ? '#FFB070' : '#1F2937'} />
       <Text style={[styles.temp, isDark && { color: '#E8E6E3' }]}>{Math.round(temp)}°{units==='imperial' ? 'F' : 'C'}</Text>
       <Text style={[styles.cond, isDark && { color: '#B8C0CC' }]}>{condition}</Text>
     </Animated.View>

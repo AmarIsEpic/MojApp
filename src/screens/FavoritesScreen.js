@@ -66,7 +66,7 @@ const FavoriteCityCard = ({ cityName, weather, onPress, onRemove, isDark, units 
             <MaterialCommunityIcons 
               name={iconForCondition(weather.weather?.[0]?.description || '')} 
               size={48} 
-              color={isDark ? '#FFB070' : '#374151'} 
+              color={isDark ? '#FFB070' : '#1F2937'} 
             />
             <View style={styles.tempWrap}>
               <Text style={[styles.temp, isDark ? styles.tempDark : styles.tempLight]}>

@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }) {
 
   const bgOpacity = bgFade.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, isDark ? 0.08 : 0.06]
+    outputRange: [0, isDark ? 0.11 : 0.09]
   });
 
   return (
@@ -106,8 +106,8 @@ export default function HomeScreen({ navigation }) {
             onChangeText={setCity}
           />
 
-          <Pressable style={styles.primaryButton} onPress={() => fetchWeather()}>
-            <Text style={styles.primaryButtonText}>Prikaži vrijeme</Text>
+          <Pressable style={[styles.primaryButton, isDark ? styles.primaryButtonDark : styles.primaryButtonLight]} onPress={() => fetchWeather()}>
+            <Text style={[styles.primaryButtonText, isDark && styles.primaryButtonTextDark]}>Prikaži vrijeme</Text>
           </Pressable>
         </View>
 
@@ -230,15 +230,23 @@ const styles = StyleSheet.create({
     color: '#0B0F14',
   },
   primaryButton: {
-    backgroundColor: '#5EE1FF',
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
+  primaryButtonDark: {
+    backgroundColor: '#5EE1FF',
+  },
+  primaryButtonLight: {
+    backgroundColor: '#F59E0B',
+  },
   primaryButtonText: {
-    color: '#0B0F14',
+    color: '#FFFFFF',
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  primaryButtonTextDark: {
+    color: '#0B0F14',
   },
   result: {
     marginTop: 24,
