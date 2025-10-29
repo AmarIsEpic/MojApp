@@ -238,7 +238,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#5EE1FF',
   },
   primaryButtonLight: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FDE68A',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   primaryButtonText: {
     color: '#FFFFFF',
