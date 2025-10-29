@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View, Platform } from 'react-native';
 import { ThemeContext } from '../theme/ThemeContext';
 
 export default function AnimatedBackground({ accent = '#5EE1FF' }) {
@@ -13,8 +13,8 @@ export default function AnimatedBackground({ accent = '#5EE1FF' }) {
     const loop = () => {
       Animated.loop(
         Animated.parallel([
-          Animated.timing(a1, { toValue: 1, duration: 8000, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-          Animated.timing(a2, { toValue: 1, duration: 10000, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+          Animated.timing(a1, { toValue: 1, duration: 8000, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(a2, { toValue: 1, duration: 10000, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
         ])
       ).start();
     };

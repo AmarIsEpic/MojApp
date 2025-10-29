@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getForecast, getWeather, groupDaily } from '../api/weatherApi';
 import CozyBackground from '../components/CozyBackground';
@@ -20,12 +20,13 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [forecast, setForecast] = useState(null);
+  const [lastCity, setLastCity] = useState('');
 
-  const fetchWeather = async () => {
-    if (!city) return;
+  const fetchWeather = async (targetCity = city) => {
+    if (!targetCity) return;
     setLoading(true);
     setError('');
-    const data = await getWeather(city, units);
+    const data = await getWeather(targetCity, units);
     if (!data || (data.cod && Number(data.cod) !== 200)) {
       setError('Grad nije pronađen. Pokušaj ponovo.');
       setWeather(null);
@@ -33,21 +34,29 @@ export default function HomeScreen({ navigation }) {
       return;
     }
     setWeather(data);
+    setLastCity(targetCity);
     setLoading(false);
     try {
       const condition = data?.weather?.[0]?.main || data?.weather?.[0]?.description;
       setAccentFromWeather(condition);
     } catch {}
     try {
-      const f = await getForecast(city, units);
+      const f = await getForecast(targetCity, units);
       setForecast(f);
     } catch {}
   };
 
+  useEffect(() => {
+    if (lastCity) {
+      fetchWeather(lastCity);
+    }
+  }, [units]);
+
   return (
     <View style={[styles.container, isDark ? styles.containerDark : styles.containerLight]}>
       {!isDark && <CozyBackground colors={gradientForCondition(weather?.weather?.[0]?.main, false)} />}
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} style={{ width: '100%' }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32, alignItems: 'center' }} style={{ width: '100%' }}>
+        <View style={styles.page}>
         <WeatherHeader city={weather?.name || 'Grad'} isDark={isDark} />
 
         <View style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}>
@@ -59,7 +68,7 @@ export default function HomeScreen({ navigation }) {
             onChangeText={setCity}
           />
 
-          <Pressable style={styles.primaryButton} onPress={fetchWeather}>
+          <Pressable style={styles.primaryButton} onPress={() => fetchWeather()}>
             <Text style={styles.primaryButtonText}>Prikaži vrijeme</Text>
           </Pressable>
         </View>
@@ -94,17 +103,18 @@ export default function HomeScreen({ navigation }) {
                 />
               </Pressable>
             </View>
-            <CurrentWeatherCard isDark temp={weather.main.temp} condition={weather.weather[0].description} units={units} />
-            <WeatherDetails isDark feelsLike={weather.main.feels_like} humidity={weather.main.humidity} wind={weather.wind.speed} units={units} />
+            <CurrentWeatherCard isDark={isDark} temp={weather.main.temp} condition={weather.weather[0].description} units={units} />
+            <WeatherDetails isDark={isDark} feelsLike={weather.main.feels_like} humidity={weather.main.humidity} wind={weather.wind.speed} units={units} />
           </View>
         )}
 
         {forecast?.list && (
           <>
-            <HourlyForecast isDark list={forecast.list} units={units} />
-            <WeeklyForecast isDark days={groupDaily(forecast.list)} units={units} />
+            <HourlyForecast isDark={isDark} list={forecast.list} units={units} />
+            <WeeklyForecast isDark={isDark} days={groupDaily(forecast.list)} units={units} />
           </>
         )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -116,6 +126,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  page: {
+    width: '100%',
+    maxWidth: 960,
+    alignSelf: 'center',
   },
   containerDark: {
     backgroundColor: '#0B0F14',

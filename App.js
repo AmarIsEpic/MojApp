@@ -44,7 +44,7 @@ export default function App() {
       <ThemeContext.Consumer>
         {({ isDark, accent }) => (
           <NavigationContainer theme={isDark ? FuturisticDarkTheme : DefaultTheme}>
-            <AnimatedBackground accent={accent} />
+            {isDark && <AnimatedBackground accent={accent} />}
             <Stack.Navigator
               screenOptions={{
                 headerStyle: { backgroundColor: isDark ? '#0F1621' : '#FFFFFF' },

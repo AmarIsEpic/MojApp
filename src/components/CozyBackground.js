@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Easing, StyleSheet, View } from 'react-native';
+import { Animated, Dimensions, Easing, StyleSheet, View, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -8,8 +8,9 @@ export default function CozyBackground({ colors = ['#EDEAE3', '#E2E8F0'] }) {
   const cloud2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(Animated.timing(cloud1, { toValue: 1, duration: 18000, easing: Easing.linear, useNativeDriver: true })).start();
-    Animated.loop(Animated.timing(cloud2, { toValue: 1, duration: 24000, easing: Easing.linear, useNativeDriver: true })).start();
+    const useDriver = Platform.OS !== 'web';
+    Animated.loop(Animated.timing(cloud1, { toValue: 1, duration: 18000, easing: Easing.linear, useNativeDriver: useDriver })).start();
+    Animated.loop(Animated.timing(cloud2, { toValue: 1, duration: 24000, easing: Easing.linear, useNativeDriver: useDriver })).start();
   }, [cloud1, cloud2]);
 
   const t1 = cloud1.interpolate({ inputRange: [0,1], outputRange: [-60, width] });
