@@ -1,43 +1,58 @@
 import * as Location from 'expo-location';
 import { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ThemeContext } from '../theme/ThemeContext';
 
 export default function LocationScreen() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const apiKey = 'ed0604f6922da175d2395178306397bd';
   const { setAccentFromWeather, units, isDark } = useContext(ThemeContext);
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+  const fetchCurrentWeather = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    setPermissionDenied(false);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Greška', 'Dozvola za pristup lokaciji je odbijena.');
+        setPermissionDenied(true);
         setLoading(false);
         return;
       }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      try {
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=${units}&appid=${apiKey}&lang=hr`
-        );
-        const data = await response.json();
+      const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const { latitude, longitude } = coords || {};
+      if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+        setErrorMsg('Location is not enabled');
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=${units}&appid=${apiKey}&lang=hr`
+      );
+      const data = await response.json();
+      if (!data || (data.cod && Number(data.cod) !== 200)) {
+        setErrorMsg('Neuspješno dohvaćanje vremenskih podataka.');
+        setWeather(null);
+      } else {
         setWeather(data);
         try {
           const condition = data?.weather?.[0]?.main || data?.weather?.[0]?.description;
           setAccentFromWeather(condition);
         } catch {}
-      } catch (error) {
-        console.error('Greška pri dohvaćanju vremena:', error);
-        Alert.alert('Greška', 'Neuspješno dohvaćanje vremenskih podataka.');
-      } finally {
-        setLoading(false);
       }
-    })();
+    } catch (e) {
+      console.error('Greška pri dohvaćanju lokacije/vremena:', e);
+      setErrorMsg('Neuspješno dohvaćanje vremenskih podataka.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentWeather();
   }, [units]);
 
   if (loading) {
@@ -51,12 +66,26 @@ export default function LocationScreen() {
     );
   }
 
-  if (!weather || !weather.main) {
+  if (permissionDenied) {
+    return (
+      <View style={[styles.center, isDark ? styles.containerDark : styles.containerLight]}>
+        <Text style={[styles.errorText, isDark ? styles.errorTextDark : styles.errorTextLight]}>Location is not enabled</Text>
+        <Pressable style={[styles.retryBtn, isDark ? styles.retryBtnDark : styles.retryBtnLight]} onPress={fetchCurrentWeather}>
+          <Text style={[styles.retryText, isDark ? styles.retryTextDark : styles.retryTextLight]}>Pokušaj ponovo</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (errorMsg || !weather || !weather.main) {
     return (
       <View style={[styles.center, isDark ? styles.containerDark : styles.containerLight]}>
         <Text style={[styles.errorText, isDark ? styles.errorTextDark : styles.errorTextLight]}>
-          Neuspješno dohvaćanje podataka o vremenu.
+          {errorMsg || 'Neuspješno dohvaćanje podataka o vremenu.'}
         </Text>
+        <Pressable style={[styles.retryBtn, isDark ? styles.retryBtnDark : styles.retryBtnLight]} onPress={fetchCurrentWeather}>
+          <Text style={[styles.retryText, isDark ? styles.retryTextDark : styles.retryTextLight]}>Pokušaj ponovo</Text>
+        </Pressable>
       </View>
     );
   }
@@ -244,5 +273,33 @@ const styles = StyleSheet.create({
   },
   errorTextLight: {
     color: '#E63946',
+  },
+  retryBtn: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  retryBtnDark: {
+    backgroundColor: 'rgba(94,225,255,0.15)',
+    borderColor: 'rgba(94,225,255,0.35)'
+  },
+  retryBtnLight: {
+    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  retryText: {
+    fontFamily: 'Nunito_700Bold',
+  },
+  retryTextDark: {
+    color: '#E6EDF3',
+  },
+  retryTextLight: {
+    color: '#0B0F14',
   },
 });
